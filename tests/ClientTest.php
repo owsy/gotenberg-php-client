@@ -175,6 +175,35 @@ final class ClientTest extends TestCase
 
     /**
      * @throws ClientException
+     * @throws Exception
+     */
+    public function testPostAsync(): void
+    {
+        $client = new Client(self::API_URL, new \Http\Adapter\Guzzle6\Client());
+        // case 1: HTML.
+        $response = $client->postAsync($this->HTMLRequest)->wait();
+        $this->assertEquals($response->getHeaderLine('Content-Type'), 'application/pdf');
+        $this->assertNotEmpty($response->getBody());
+        // case 2: URL.
+        $response = $client->postAsync($this->URLRequest)->wait();
+        $this->assertEquals($response->getHeaderLine('Content-Type'), 'application/pdf');
+        $this->assertNotEmpty($response->getBody());
+        // case 3: markdown.
+        $response = $client->postAsync($this->markdownRequest)->wait();
+        $this->assertEquals($response->getHeaderLine('Content-Type'), 'application/pdf');
+        $this->assertNotEmpty($response->getBody());
+        // case 4: office.
+        $response = $client->postAsync($this->officeRequest)->wait();
+        $this->assertEquals($response->getHeaderLine('Content-Type'), 'application/pdf');
+        $this->assertNotEmpty($response->getBody());
+        // case 5: merge.
+        $response = $client->postAsync($this->mergeRequest)->wait();
+        $this->assertEquals($response->getHeaderLine('Content-Type'), 'application/pdf');
+        $this->assertNotEmpty($response->getBody());
+    }
+
+    /**
+     * @throws ClientException
      * @throws FilesystemException
      * @throws Exception
      */

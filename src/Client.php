@@ -6,14 +6,18 @@ namespace TheCodingMachine\Gotenberg;
 
 use Exception;
 use GuzzleHttp\Psr7\MultipartStream;
+use Http\Client\HttpAsyncClient;
 use Http\Client\HttpClient;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\MessageFactoryDiscovery;
+use Http\Promise\Promise;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use function fclose;
 use function fopen;
 use function fwrite;
+use function get_class;
+use function sprintf;
 
 final class Client implements GotenbergClientInterface
 {
@@ -27,6 +31,26 @@ final class Client implements GotenbergClientInterface
     {
         $this->apiURL = $apiURL;
         $this->client = $client ?: HttpClientDiscovery::find();
+    }
+
+    public function postAsync(GotenbergRequestInterface $request): Promise
+    {
+        if (! $this->client instanceof HttpAsyncClient) {
+            throw new Exception(sprintf(
+                'The client class %s does implement %s',
+                get_class($this->client),
+                HttpAsyncClient::class
+            ));
+        }
+
+        return $this
+            ->client
+            ->sendAsyncRequest(
+                $this->makeMultipartFormDataRequest($request)
+            )
+            ->then(function (ResponseInterface $response): ResponseInterface {
+                return $this->handleResponse($response);
+            });
     }
 
     /**
